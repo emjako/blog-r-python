@@ -1,0 +1,97 @@
+
+---
+title: "Équivalences R vs Python : dplyr expliqué"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(lubridate)
+```
+
+## 1. Création d'un tibble
+
+On crée une table avec des données textuelles, numériques et de dates.
+
+```{r}
+df <- tibble(
+  nom = c("Anna", "Bertrand", "Claire", "Daniel"),
+  age = c(28, 34, 29, 42),
+  ville = c("Paris", "Nice", "Lille", "Toulouse"),
+  naissance = ymd(c("1996-02-10", "1990-06-23", "1995-12-05", "1982-09-16"))
+)
+df
+```
+
+## 2. Sélection de colonnes
+
+```{r}
+df %>% select(nom, age)
+```
+
+## 3. Filtrage des lignes
+
+```{r}
+df %>% filter(age > 30 & ville != "Paris")
+```
+
+## 4. Création d'une nouvelle variable
+
+```{r}
+df <- df %>% mutate(age_plus_10 = age + 10)
+df
+```
+
+## 5. Manipulation de dates
+
+```{r}
+df <- df %>% mutate(
+  annee = year(naissance),
+  mois = month(naissance),
+  jour = day(naissance)
+)
+df
+```
+
+## 6. Calcul d'âge exact
+
+```{r}
+df <- df %>% mutate(age_exact = interval(naissance, today()) %/% years(1))
+df
+```
+
+## 7. Traitement des chaînes de caractères
+
+```{r}
+df <- df %>% mutate(
+  nom_majuscules = toupper(nom),
+  nom_minuscules = tolower(nom),
+  longueur_nom = nchar(nom),
+  trois_premiers = substr(nom, 1, 3)
+)
+df
+```
+
+## 8. Agrégation
+
+```{r}
+df %>%
+  group_by(ville) %>%
+  summarise(
+    moyenne_age = mean(age),
+    nombre_personnes = n(),
+    .groups = "drop"
+  )
+```
+
+## 9. Jointure
+
+```{r}
+regions <- tibble(
+  ville = c("Paris", "Nice", "Lille", "Toulouse"),
+  region = c("Île-de-France", "PACA", "Hauts-de-France", "Occitanie")
+)
+
+df <- df %>% left_join(regions, by = "ville")
+df
+```
